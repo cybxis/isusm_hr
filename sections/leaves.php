@@ -92,17 +92,7 @@ function getStatusIcon($status) {
 
 <div class="p-6">
     <!-- Statistics Cards -->
-    <?php 
-    // Calculate the number of cards to display
-    $cardCount = 3; // Base cards: Total, Approved, Rejected
-    if ($stats['pending_leaves'] > 0) {
-        $cardCount++;
-    }
-    
-    // Set appropriate grid columns based on card count
-    $gridCols = $cardCount == 3 ? 'md:grid-cols-3' : 'md:grid-cols-4';
-    ?>
-    <div class="grid grid-cols-1 <?php echo $gridCols; ?> gap-4 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
@@ -115,8 +105,7 @@ function getStatusIcon($status) {
             </div>
         </div>
         
-        <?php if ($stats['pending_leaves'] > 0): ?>
-        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 <?php echo ($stats['pending_leaves'] > 0) ? 'pending-card-blink' : ''; ?>">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
                     <i class="fas fa-clock text-yellow-600 text-2xl"></i>
@@ -127,7 +116,6 @@ function getStatusIcon($status) {
                 </div>
             </div>
         </div>
-        <?php endif; ?>
         
         <div class="bg-green-50 border border-green-200 rounded-lg p-4">
             <div class="flex items-center">
@@ -334,3 +322,9 @@ function getStatusIcon($status) {
     </div>
     <?php endif; ?>
 </div>
+<style>
+/* ...existing styles... */
+@keyframes pendingBlink { 0%,100%{opacity:1} 50%{opacity:.55} }
+.pending-card-blink { animation: pendingBlink 1.2s ease-in-out infinite; }
+.pending-card-blink:hover { animation-play-state: paused; }
+</style>
