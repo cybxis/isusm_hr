@@ -92,7 +92,17 @@ function getStatusIcon($status) {
 
 <div class="p-6">
     <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+    <?php 
+    // Calculate the number of cards to display
+    $cardCount = 3; // Base cards: Total, Approved, Rejected
+    if ($stats['pending_leaves'] > 0) {
+        $cardCount++;
+    }
+    
+    // Set appropriate grid columns based on card count
+    $gridCols = $cardCount == 3 ? 'md:grid-cols-3' : 'md:grid-cols-4';
+    ?>
+    <div class="grid grid-cols-1 <?php echo $gridCols; ?> gap-4 mb-6">
         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
@@ -105,6 +115,7 @@ function getStatusIcon($status) {
             </div>
         </div>
         
+        <?php if ($stats['pending_leaves'] > 0): ?>
         <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
@@ -116,6 +127,7 @@ function getStatusIcon($status) {
                 </div>
             </div>
         </div>
+        <?php endif; ?>
         
         <div class="bg-green-50 border border-green-200 rounded-lg p-4">
             <div class="flex items-center">
@@ -137,18 +149,6 @@ function getStatusIcon($status) {
                 <div class="ml-4">
                     <p class="text-sm font-medium text-red-600">Rejected</p>
                     <p class="text-2xl font-bold text-red-900"><?php echo number_format($stats['rejected_leaves']); ?></p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <i class="fas fa-calendar-week text-purple-600 text-2xl"></i>
-                </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-purple-600">This Month</p>
-                    <p class="text-2xl font-bold text-purple-900"><?php echo number_format($stats['this_month_leaves']); ?></p>
                 </div>
             </div>
         </div>
