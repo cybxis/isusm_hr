@@ -96,17 +96,20 @@ The system implements comprehensive access control based on user designation and
 ### **User Roles & Designation-Based Restrictions**
 
 #### **Designation ID = 2 (Administrators/HR)**
+
 - **Full Access**: Can view all employees and leaves from all offices
 - **Global View**: See system-wide data and statistics
 - **No Restrictions**: Access to all sections and functionality
 
 #### **Designation ID = 6 (Restricted Users)**
+
 - **Complete Restriction**: Blocked from accessing employees and leaves sections
 - **Dashboard Access**: Denied access to main dashboard
 - **Auto Redirect**: Automatically redirected to login with access denied message
 - **Error Message**: Displays "Access denied: Insufficient privileges"
 
 #### **Other Designations (Regular Employees)**
+
 - **Office-Filtered Access**: Can only view employees and leaves from their own office
 - **Limited Scope**: Data filtered by `office_id` to match user's office
 - **Section Access**: Can access both employees and leaves sections with restrictions
@@ -114,39 +117,43 @@ The system implements comprehensive access control based on user designation and
 ### **Data Filtering Logic**
 
 #### **Employees Section**
+
 ```php
 // Administrators (designation_id = 2)
 SELECT * FROM tbl_users ORDER BY first_name, last_name
 
-// Regular Users (other designations)  
+// Regular Users (other designations)
 SELECT * FROM tbl_users WHERE office_id = [user_office_id] ORDER BY first_name, last_name
 
 // Restricted Users (designation_id = 6)
 Access Denied - Cannot view section
 ```
 
-#### **Leaves Section**  
+#### **Leaves Section**
+
 ```php
 // Administrators (designation_id = 2)
 SELECT * FROM tbl_leaves l JOIN tbl_users u ON l.user_id = u.user_id ORDER BY l.filed_at DESC
 
 // Regular Users (other designations)
-SELECT * FROM tbl_leaves l JOIN tbl_users u ON l.user_id = u.user_id 
+SELECT * FROM tbl_leaves l JOIN tbl_users u ON l.user_id = u.user_id
 WHERE u.office_id = [user_office_id] ORDER BY l.filed_at DESC
 
-// Restricted Users (designation_id = 6)  
+// Restricted Users (designation_id = 6)
 Access Denied - Cannot view section
 ```
 
 ### **Security Implementation**
 
 #### **Multi-Layer Authentication**
+
 1. **Session Validation**: Secure session with proper cookie settings
-2. **User Object Validation**: User class validates session and loads user data  
+2. **User Object Validation**: User class validates session and loads user data
 3. **Role-Based Filtering**: Data queries filtered based on user permissions
 4. **Access Control**: Section-level restrictions for unauthorized roles
 
 #### **User Class Architecture**
+
 - **Centralized Authentication**: All authentication logic in User class
 - **Secure Sessions**: Automatic session security configuration
 - **Permission Methods**: Built-in methods for checking user capabilities
@@ -155,12 +162,14 @@ Access Denied - Cannot view section
 ### **Access Control Features**
 
 #### **Unauthenticated Users**
+
 - Redirected to login page
 - Cannot access any protected sections
 - Session automatically configured when accessing User class
 
 #### **Session Security**
-- **Cookie Lifetime**: 1 day (86400 seconds)  
+
+- **Cookie Lifetime**: 1 day (86400 seconds)
 - **HTTP Only**: Prevents JavaScript access to cookies
 - **Secure Flag**: Requires HTTPS for cookie transmission
 - **SameSite Policy**: Strict policy prevents CSRF attacks
@@ -182,7 +191,7 @@ The system uses the following tables with proper relationships:
 ### Employee Management
 
 - Complete employee profiles with office and designation
-- Role-based categorization  
+- Role-based categorization
 - Activity status tracking
 - Leave count monitoring
 - **Role-based data filtering** (office-level restrictions for regular users)

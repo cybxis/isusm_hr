@@ -34,15 +34,20 @@ if ($currentUser->getDesignationId() == 6) {
 }
 
 try {
+    // Get total count for pagination info
+    $statsQuery = $currentUser->getLeavesStatsQuery();
+    $statsStmt = $currentUser->executeLeavesQuery($statsQuery);
+    $stats = $statsStmt->fetch(PDO::FETCH_ASSOC);
+    $totalRecords = $stats['total_leaves'];
+    
     // Get leaves based on user permissions
     $leavesQuery = $currentUser->getLeavesQuery();
     $leavesStmt = $currentUser->executeLeavesQuery($leavesQuery);
     $leaves = $leavesStmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Get leave statistics
-    $statsQuery = $currentUser->getLeavesStatsQuery();
-    $statsStmt = $currentUser->executeLeavesQuery($statsQuery);
-    $stats = $statsStmt->fetch(PDO::FETCH_ASSOC);
+    // Client-side pagination settings
+    $recordsPerPage = 15;
+    $totalPages = ceil($totalRecords / $recordsPerPage);
     
     error_log("Current user: " . $currentUser->getFullName() . " (ID: " . $currentUser->getId() . ")");
     error_log("Can view all leaves: " . ($currentUser->canViewAllEmployees() ? 'Yes' : 'No'));
@@ -278,6 +283,47 @@ function getStatusIcon($status) {
                 <?php endforeach; ?>
             </tbody>
         </table>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div class="mt-6 bg-white px-4 py-3 border border-gray-200 rounded-lg" id="pagination-controls">
+        <div class="flex items-center justify-between">
+            <!-- Empty left space -->
+            <div></div>
+            
+            <!-- Pagination Buttons (Centered) -->
+            <div class="flex items-center space-x-2" id="pagination-buttons">
+                <!-- Previous Button -->
+                <button id="prev-btn" onclick="previousPage()" 
+                        class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-100 border border-gray-200 rounded-md cursor-not-allowed" disabled>
+                    <i class="fas fa-chevron-left mr-1"></i>
+                    Previous
+                </button>
+                
+                <!-- Page Numbers -->
+                <div class="flex items-center space-x-1" id="page-numbers">
+                    <!-- Dynamically generated page numbers -->
+                </div>
+                
+                <!-- Next Button -->
+                <button id="next-btn" onclick="nextPage()" 
+                        class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200">
+                    Next
+                    <i class="fas fa-chevron-right ml-1"></i>
+                </button>
+            </div>
+
+            <!-- Pagination Info (Right side) -->
+            <div class="flex flex-col items-end text-sm text-gray-700">
+                <span class="font-medium">Page <span id="current-page">1</span> of <span id="total-pages"><?php echo $totalPages; ?></span></span>
+                <span class="text-xs text-gray-500 mt-1">
+                    (<span id="total-records"><?php echo number_format($totalRecords); ?></span> total leaves, showing <span id="visible-records">15</span> on this page)
+                </span>
+                <span class="font-medium" id="pagination-info" style="display: none;">
+                    Showing 1 to 15 of <?php echo number_format($totalRecords); ?> results
+                </span>
+            </div>
+        </div>
     </div>
 
     <?php if (empty($leaves)): ?>

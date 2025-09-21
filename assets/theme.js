@@ -19,7 +19,13 @@ let filteredRows = [];
 
 function initializePagination() {
   console.log('initializePagination called');
-  const table = document.getElementById('employeesTable');
+  
+  // Check for both employeesTable and leavesTable
+  let table = document.getElementById('employeesTable');
+  if (!table) {
+    table = document.getElementById('leavesTable');
+  }
+  
   console.log('Table found:', table);
   
   if (!table) return;

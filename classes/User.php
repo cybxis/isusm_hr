@@ -8,6 +8,7 @@ class User {
     private $db;
     private $user_id;
     private $first_name;
+    private $middle_name;
     private $last_name;
     private $email;
     private $office_id;
@@ -66,6 +67,7 @@ class User {
                 SELECT 
                     u.user_id,
                     u.first_name,
+                    u.middle_name,
                     u.last_name,
                     u.email,
                     u.office_id,
@@ -75,7 +77,9 @@ class User {
                     o.office_name,
                     d.designation_name,
                     r.role_name,
-                    CONCAT(u.first_name, ' ', u.last_name) as full_name
+                    CONCAT(u.first_name, ' ', 
+                           CASE WHEN u.middle_name IS NOT NULL THEN CONCAT(u.middle_name, ' ') ELSE '' END,
+                           u.last_name) as full_name
                 FROM tbl_users u
                 LEFT JOIN tbl_offices o ON u.office_id = o.office_id
                 LEFT JOIN tbl_designations d ON u.designation_id = d.designation_id
@@ -90,6 +94,7 @@ class User {
             if ($userData) {
                 $this->user_id = $userData['user_id'];
                 $this->first_name = $userData['first_name'];
+                $this->middle_name = $userData['middle_name'];
                 $this->last_name = $userData['last_name'];
                 $this->email = $userData['email'];
                 $this->office_id = $userData['office_id'];
@@ -112,6 +117,7 @@ class User {
     // Getters
     public function getId() { return $this->user_id; }
     public function getFirstName() { return $this->first_name; }
+    public function getMiddleName() { return $this->middle_name; }
     public function getLastName() { return $this->last_name; }
     public function getEmail() { return $this->email; }
     public function getOfficeId() { return $this->office_id; }
@@ -123,6 +129,89 @@ class User {
     public function getDesignationName() { return $this->designation_name; }
     public function getRoleName() { return $this->role_name; }
 
+    // Additional name getters for flexibility
+    public function getFirstMiddleName() {
+        $name = $this->first_name;
+        if (!empty($this->middle_name)) {
+            $name .= ' ' . $this->middle_name;
+        }
+        return $name;
+    }
+
+    public function getLastFirstName() {
+        return $this->last_name . ', ' . $this->first_name;
+    }
+
+    public function getFullNameWithComma() {
+        $name = $this->last_name . ', ' . $this->first_name;
+        if (!empty($this->middle_name)) {
+            $name .= ' ' . $this->middle_name;
+        }
+        return $name;
+    }
+
+    public function getMiddleInitial() {
+        return !empty($this->middle_name) ? strtoupper(substr($this->middle_name, 0, 1)) : '';
+    }
+
+    public function getDisplayName($format = 'full') {
+        switch ($format) {
+            case 'first':
+                return $this->first_name;
+            case 'last':
+                return $this->last_name;
+            case 'firstlast':
+                return $this->first_name . ' ' . $this->last_name;
+            case 'lastfirst':
+                return $this->getLastFirstName();
+            case 'firstmiddle':
+                return $this->getFirstMiddleName();
+            case 'initials':
+                return $this->getInitials();
+            case 'full':
+            default:
+                return $this->full_name;
+        }
+    }
+
+    /**
+     * Build full name dynamically from individual parts
+     */
+    public function buildFullName() {
+        $name = $this->first_name;
+        if (!empty($this->middle_name)) {
+            $name .= ' ' . $this->middle_name;
+        }
+        $name .= ' ' . $this->last_name;
+        return $name;
+    }
+
+    /**
+     * Get full name - uses database value if available, otherwise builds dynamically
+     */
+    public function getFullNameDynamic() {
+        return !empty($this->full_name) ? $this->full_name : $this->buildFullName();
+    }
+
+    /**
+     * Get formatted initials with different options
+     */
+    public function getFormattedInitials($includeMiddle = true, $withDots = false) {
+        $initials = strtoupper(substr($this->first_name, 0, 1));
+        
+        if ($includeMiddle && !empty($this->middle_name)) {
+            $initials .= strtoupper(substr($this->middle_name, 0, 1));
+        }
+        
+        $initials .= strtoupper(substr($this->last_name, 0, 1));
+        
+        if ($withDots) {
+            return implode('.', str_split($initials)) . '.';
+        }
+        
+        return $initials;
+    }
+
     // Role-based permissions
     public function canViewAllEmployees() {
         return $this->designation_id == 2;
@@ -133,7 +222,12 @@ class User {
     }
 
     public function getInitials() {
-        return strtoupper(substr($this->first_name, 0, 1) . substr($this->last_name, 0, 1));
+        $initials = strtoupper(substr($this->first_name, 0, 1));
+        if (!empty($this->middle_name)) {
+            $initials .= strtoupper(substr($this->middle_name, 0, 1));
+        }
+        $initials .= strtoupper(substr($this->last_name, 0, 1));
+        return $initials;
     }
 
     /**

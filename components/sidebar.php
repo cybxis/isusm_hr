@@ -42,7 +42,15 @@ if (!isset($currentUser) || !($currentUser instanceof User)) {
             </div>
             <div class="flex-1 min-w-0">
                 <p class="text-sm font-medium text-gray-800 truncate">
-                    <?php echo htmlspecialchars($currentUser->getFullName()); ?>
+                    <?php 
+                    // Display name with middle initial and dot only
+                    $displayName = $currentUser->getFirstName();
+                    if (!empty($currentUser->getMiddleName())) {
+                        $displayName .= ' ' . $currentUser->getMiddleInitial() . '.';
+                    }
+                    $displayName .= ' ' . $currentUser->getLastName();
+                    echo htmlspecialchars($displayName);
+                    ?>
                 </p>
                 <p class="text-xs text-gray-500 truncate">
                     <?php echo htmlspecialchars($currentUser->getRoleName() ?? 'Employee'); ?>
@@ -101,7 +109,7 @@ if (!isset($currentUser) || !($currentUser instanceof User)) {
     <div class="mt-4 pt-4 border-t border-gray-200">
         <button 
             onclick="confirmLogout()"
-            class="w-full flex items-center space-x-3 text-left p-3 rounded-lg hover:bg-red-50 hover:text-red-700 transition-colors duration-200 text-gray-600">
+            class="w-full flex items-center space-x-3 text-left p-3 rounded-lg bg-red-50 text-red-700 hover:bg-red-600 hover:text-white transition-colors duration-200">
             <i class="fas fa-sign-out-alt"></i>
             <span>Logout</span>
         </button>
@@ -173,8 +181,15 @@ if (typeof loadSection !== 'function') {
                         }, 100);
                     }
                     
-                    if (section === 'leaves' && typeof initializeLeaveFilters === 'function') {
-                        setTimeout(initializeLeaveFilters, 100);
+                    if (section === 'leaves') {
+                        setTimeout(() => {
+                            if (typeof initializePagination === 'function') {
+                                initializePagination();
+                            }
+                            if (typeof initializeLeaveFilters === 'function') {
+                                initializeLeaveFilters();
+                            }
+                        }, 100);
                     }
                 }
             })
